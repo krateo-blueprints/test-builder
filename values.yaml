@@ -1,0 +1,23 @@
+ingress:
+  host: app.example.local
+  className: ""
+  path: /
+  pathType: Prefix
+  annotations: {}
+  backend:
+    serviceName: app-service
+    servicePort: 80
+
+certificate:
+  secretName: ""
+  commonName: ""
+  extraDnsNames: []
+  duration: 2160h
+  renewBefore: 720h
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  issuerRef:
+    name: krateo-selfsigned-ca
+    kind: ClusterIssuer
+    group: cert-manager.io
