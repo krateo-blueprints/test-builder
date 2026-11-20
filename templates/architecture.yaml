@@ -1,0 +1,48 @@
+{{- /* Rendered per composition so the detail page can read the chart architecture through
+       snowplow /call under the caller's own RBAC. Edit data.architecture; the builder owns the rest. */}}
+{{- $g := .Values.global | default dict }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "%s-architecture" ($g.compositionName | default .Release.Name) }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    krateo.io/architecture: "test-builder"
+data:
+  architecture: |
+    apiVersion: architecture.krateo.io/v1alpha1
+    kind: ChartArchitecture
+    chart: test-builder
+    resources:
+      - id: certificate
+        class: custom
+        apiVersion: cert-manager.io/v1
+        kind: Certificate
+        template: templates/certificate.yaml
+        name: printf "%s-certificate" $.Release.Name | trunc 63 | trimSuffix "-"
+        readyWhen: .status.conditions[] | select(.type == "Ready") | .status == "True"
+      - id: ingress
+        class: native
+        apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        template: templates/ingress.yaml
+        name: printf "%s-ingress" $.Release.Name | trunc 63 | trimSuffix "-"
+        dependsOn:
+          - ref: certificate
+            ready: true
+    states:
+      - name: certificate
+      - name: ingress
+{{- /* krateo:graph begin — generated from data.architecture; edit the descriptor, not this block. */}}
+{{- $v := .Values.AsMap }}
+{{- $nodes := list }}
+{{- $names := list }}
+{{- $present := true }}
+{{- $names = append $names (printf "%s-certificate" $.Release.Name | trunc 63 | trimSuffix "-") }}
+{{- $nodes = append $nodes (dict "id" "certificate" "apiVersion" "cert-manager.io/v1" "kind" "Certificate" "class" "custom" "level" 0 "readyWhen" ".status.conditions[] | select(.type == \"Ready\") | .status == \"True\"" "forEach" false "present" $present "names" $names "dependsOn" (list)) }}
+{{- $names = list }}
+{{- $present = true }}
+{{- $names = append $names (printf "%s-ingress" $.Release.Name | trunc 63 | trimSuffix "-") }}
+{{- $nodes = append $nodes (dict "id" "ingress" "apiVersion" "networking.k8s.io/v1" "kind" "Ingress" "class" "native" "level" 1 "forEach" false "present" $present "names" $names "dependsOn" (list (dict "ref" "certificate" "ready" true "all" false "active" true))) }}
+  graph: {{ dict "v" 1 "chart" "test-builder" "states" (list "certificate" "ingress") "composition" (dict "apiVersion" ($g.compositionApiVersion | default "") "resource" ($g.compositionResource | default "") "name" ($g.compositionName | default "") "namespace" .Release.Namespace "uid" ($g.compositionId | default "")) "nodes" $nodes | toJson | quote }}
+{{- /* krateo:graph end */}}
