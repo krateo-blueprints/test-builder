@@ -1,0 +1,9 @@
+apiVersion: v2
+name: test-builder
+icon: https://raw.githubusercontent.com/krateo-platformops/.github/main/brand/logo.svg
+type: application
+version: 0.1.0
+keywords:
+  - blueprint
+sources:
+  - https://github.com/krateo-blueprints/test-builder
