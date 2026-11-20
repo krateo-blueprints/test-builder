@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "description": "Global values injected by Krateo composition-dynamic-controller"
+    },
+    "ingress": {
+      "type": "object",
+      "description": "Ingress configuration",
+      "properties": {
+        "host": {
+          "type": "string",
+          "description": "Hostname for Ingress rule and TLS certificate SAN",
+          "minLength": 1,
+          "default": "app.example.local"
+        },
+        "className": {
+          "type": "string",
+          "description": "Optional IngressClass name (omitted when empty)",
+          "default": ""
+        },
+        "path": {
+          "type": "string",
+          "description": "HTTP path matched by the Ingress rule",
+          "minLength": 1,
+          "default": "/"
+        },
+        "pathType": {
+          "type": "string",
+          "description": "Ingress path matching strategy",
+          "enum": ["Prefix", "Exact", "ImplementationSpecific"],
+          "default": "Prefix"
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Optional annotations added to the Ingress metadata",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "backend": {
+          "type": "object",
+          "description": "Backend Service target for the Ingress rule",
+          "properties": {
+            "serviceName": {
+              "type": "string",
+              "description": "Name of the backend Kubernetes Service",
+              "minLength": 1,
+              "default": "app-service"
+            },
+            "servicePort": {
+              "type": "integer",
+              "description": "Port number of the backend Kubernetes Service",
+              "minimum": 1,
+              "maximum": 65535,
+              "default": 80
+            }
+          }
+        }
+      }
+    },
+    "certificate": {
+      "type": "object",
+      "description": "cert-manager Certificate configuration",
+      "properties": {
+        "secretName": {
+          "type": "string",
+          "description": "Target TLS Secret name (defaults to <release>-tls when empty)",
+          "default": ""
+        },
+        "commonName": {
+          "type": "string",
+          "description": "Optional X.509 Common Name (max 64 chars)",
+          "maxLength": 64,
+          "default": ""
+        },
+        "extraDnsNames": {
+          "type": "array",
+          "description": "Additional DNS Subject Alternative Names",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "duration": {
+          "type": "string",
+          "description": "Requested certificate lifetime as a Go duration (minimum 1h)",
+          "default": "2160h"
+        },
+        "renewBefore": {
+          "type": "string",
+          "description": "Duration before expiry when cert-manager renews the certificate",
+          "default": "720h"
+        },
+        "privateKey": {
+          "type": "object",
+          "description": "Private key generation options",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "description": "Private key algorithm",
+              "enum": ["RSA", "ECDSA", "Ed25519"],
+              "default": "RSA"
+            },
+            "size": {
+              "type": "integer",
+              "description": "Key bit size (RSA: 2048/4096/8192, ECDSA: 256/384/521)",
+              "default": 2048
+            }
+          }
+        },
+        "issuerRef": {
+          "type": "object",
+          "description": "Reference to the cert-manager Issuer or ClusterIssuer",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Issuer or ClusterIssuer name",
+              "minLength": 1,
+              "default": "krateo-selfsigned-ca"
+            },
+            "kind": {
+              "type": "string",
+              "description": "Issuer kind",
+              "enum": ["ClusterIssuer", "Issuer"],
+              "default": "ClusterIssuer"
+            },
+            "group": {
+              "type": "string",
+              "description": "API group of the issuer",
+              "default": "cert-manager.io"
+            }
+          }
+        }
+      }
+    }
+  }
+}
